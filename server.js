@@ -12,8 +12,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
+app.get("/",(req,res)=>{
+    res.render("FirstLayout");
+})
+
 // Route for Landing Page
-app.get("/", (req, res) => {
+app.get("/Dashboard", (req, res) => {
     res.render("LandingPage");
 });
 
