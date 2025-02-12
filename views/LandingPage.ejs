@@ -6,7 +6,7 @@
     <title>Mind Guard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="h-screen">
+<body class="h-screen font-sans ">
 
     <!-- First Div (Navbar) -->
     <div class="bg-white h-14 p-3 flex justify-center items-center space-x-4 shadow-md">
@@ -29,10 +29,55 @@
             <img  class="w-full h-full" src="https://pbs.twimg.com/media/Gjlb0E5aIAAZG1f?format=jpg&name=large" alt="Doctor Image">
         </div>
     </div>
-    <div class="w-full h-screen bg-gray-200 flex justify-center">
-        <div class="w-[90vw] h-full rounded-x-2 bg-blue-400 flex ">
-
+    <div id="daily-activities" class="w-full h-screen pt-12  bg-blue-400   flex justify-center">
+        <div class="w-[90vw] h-full rounded-t-[40%]  bg-gray-200 flex overflow-hidden flex justify-center items-center">
+            <div class="w-[50vw] h-[80vh] rounded-md bg-blue-400 flex flex-col justify-between p-2">
+              
+                <div class="h-1/2  flex m-1 p-2 space-x-2">
+                    <div class="rounded-xl bg-gray-200 flex-1 p-4 ">
+                        <div class="w-full h-1/2 max-w-full" ></div>
+                        <div class="flex justify-center">
+                            <button class="mt-4 px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ">
+                                Practice Breathing
+                            </button>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="rounded-xl bg-gray-200 flex-1 p-4">
+                        <div class="w-full h-1/2 max-w-full" ></div>
+                        <div class="flex justify-center">
+                            <button class="mt-4 px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ">
+                                Tiutorials
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="h-1/2  flex m-1 p-2 space-x-2">
+                    <div class="rounded-xl bg-gray-200 flex-1 p-4">
+                        <div class="w-full h-1/2 max-w-full" ></div>
+                        <div class="flex justify-center">
+                            <button class="mt-4 px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ">
+                                Talk to People
+                            </button>
+                        </div>
+                    </div>
+                    <div class="rounded-xl bg-gray-200 flex-1 p-4">
+                        <div class="w-full h-1/2 max-w-full" ></div>
+                        <div class="flex justify-center">
+                            <button class="mt-4 px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 ">
+                                Practice Yoga
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              
+            </div>
+            
         </div>
     </div>
+    
 </body>
 </html>
