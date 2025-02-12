@@ -1,1 +1,0 @@
-Team Details : Swapnanil Chatterjee ( Team Lead ) , Tuhin Biswas , Tuhin Pramanik
