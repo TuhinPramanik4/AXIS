@@ -1,11 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    Layout
+
+<body class="h-screen">
+    <div class="w-full h-screen bg-zinc-100 flex ">
+        <div class="w-full h-full bg-gray-200 ">
+            <nav class="w-full h-14 bg-gray-200 flex justify-between items-center px-8 shadow-md">
+                <!-- Logo (Optional) -->
+                <div class="text-xl font-bold text-gray-800">MindGuard</div>
+
+                <!-- Navigation Links -->
+                <div class="flex space-x-6">
+                    <a href="#About-Us" class="text-gray-700 hover:text-blue-500 font-semibold">About Us</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-semibold">Join Us</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-semibold">Contact In Need</a>
+                </div>
+            </nav>
+
+            <div class="flex w-full h-[calc(100%-3.5rem)]">
+                <div class="w-1/2 h-full bg-zinc-300 flex flex-col justify-between">
+                    <!-- Video Container -->
+                    <div class="w-full h-[calc(100%-3.5rem)] flex justify-center items-center">
+                        <video class="w-[100%] h-[100%] object-contain pointer-events-none" autoplay loop muted>
+                            <source src="../Public/Untitled design (2).mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+
+                    <!-- Button Container -->
+                    <div class="w-full h-14 bg-zinc-200 flex justify-center items-center">
+                        <h1 class="px-4 py-2 bg-blue-500 text-white rounded-lg">A step forward for better life</h1>
+                    </div>
+                </div>
+
+
+
+                <div class="w-1/2 h-full bg-zinc-200">
+                    <div class="w-full h-[calc(100%-3.5rem)] p-6 flex flex-col justify-center space-y-4">
+                        <!-- Heading -->
+                        <h1 class="text-3xl font-bold text-gray-800 text-center">Why Choose MindGuard?</h1>
+                    
+                        <!-- Description -->
+                        <h2 class="text-gray-700 text-lg leading-relaxed text-justify">
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ratione, impedit totam. Eos
+                            similique velit maxime nisi atque error eveniet nemo facere delectus officia suscipit,
+                            voluptatibus voluptatem libero laboriosam nam porro cum necessitatibus. Corporis illum
+                            pariatur maiores nam aliquam quaerat accusamus deserunt, vitae, nesciunt maxime delectus
+                            error aut nostrum laborum earum a, eligendi fugit suscipit aperiam porro! Suscipit soluta,
+                            nihil quas amet, necessitatibus unde ex doloremque recusandae quos ipsam dolorum eius labore
+                            officiis culpa perspiciatis, sed voluptate sunt similique?
+                        </h2>
+                        <div class="w-full h-14 bg-zinc-200 flex justify-center items-center">
+                            <button class="px-4 py-2 bg-blue-500 text-white rounded-lg">Join Us Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full h-14 bg-zinc-300 flex justify-center">
+                        <div class="flex items-center space-x-4 p-4 bg-white/20 rounded-lg shadow-md">
+                            <!-- Icon -->
+                            <div class="w-12 h-12">
+                                <img src="https://static.vecteezy.com/system/resources/previews/005/755/264/non_2x/call-answer-icon-symbol-green-call-icon-symbol-for-web-app-logo-vector.jpg"
+                                    alt="Call Icon" class="w-full h-full object-contain rounded-full">
+                            </div>
+            
+                            <!-- Text -->
+                            <div class="flex justify-center">
+                                <h2 class="text-lg font-semibold text-gray-800">Talk to us in need</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </body>
+
 </html>
