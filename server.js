@@ -2,98 +2,103 @@ import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
 import bodyParser from 'body-parser';
-import User from "./Models/User.js";  
-
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import User from "./Models/User.js";   
 
 const app = express();
-
+const SECRET_KEY = " "; // Change this to a secure key
 
 app.use('/Public', express.static(path.join(process.cwd(), 'Public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
-mongoose.connect("mongo db url", { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(" ", { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
 
-app.get("/",(req,res)=>{
-    res.render("FirstLayout");
-})
+// Middleware to verify JWT
+async function authenticateToken(req, res, next) {
+    const token = req.cookies.jwt;
+    if (!token) return res.redirect('/Sign-in');
 
-// Route for Landing Page
-app.get("/Dashboard", (req, res) => {
-    res.render("LandingPage");
+    jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+        if (err) return res.status(403).send("Invalid token");
+
+        try {
+            const user = await User.findById(decoded.id).select("-password"); // Exclude password for security
+            if (!user) return res.redirect('/Sign-in');
+
+            req.user = user; // Attach full user data
+            next();
+        } catch (error) {
+            res.status(500).send("Server error");
+        }
+    });
+}
+
+
+app.get("/", (req, res) => {
+    res.render("FirstLayout");
 });
 
-app.get("/Sign-in",(req,res)=>{
+// Landing Page (Protected Route)
+app.get("/Dashboard", authenticateToken, (req, res) => {
+    res.render("LandingPage", { user: req.user });
+});
+
+
+app.get("/Sign-in", (req, res) => {
     res.render("SignIN");
-})
+});
+
 app.post("/Sign-in", async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Check if the user exists
         const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).send("User not found");
-        }
+        if (!user) return res.status(400).send("User not found");
 
-        // Check if password matches (No Hashing as per your request)
-        if (user.password !== password) {
-            return res.status(401).send("Incorrect password");
-        }
+        if (user.password !== password) return res.status(401).send("Incorrect password");
 
+        const token = jwt.sign({ id: user._id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
+        res.cookie("jwt", token, { httpOnly: true, secure: true });
         res.redirect("/Dashboard");
     } catch (error) {
         res.status(500).send("Server error");
     }
 });
-//Get and post request for Sign up
-app.get("/Sign-Up",(req,res)=>{
+
+app.get("/Sign-Up", (req, res) => {
     res.render("SignUp");
-})
+});
+
 app.post("/Sign-Up", async (req, res) => {
     try {
         const { username, password, age, location, gender, phoneNumber, email } = req.body;
-
-
         const newUser = new User({ username, password, age, location, gender, phoneNumber, email });
         await newUser.save();
-
         res.status(201).redirect("/Sign-in");
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
 });
 
-app.get("/profile", (req, res) => {
-    res.render('Profile');
+// Profile route (Protected)
+app.get("/profile", authenticateToken, (req, res) => {
+    res.render("Profile", { user: req.user });
 });
 
-app.get("/practice-Breathing",(req,res)=>{
-    res.render("Breathing");
-})
 
-app.get("/Tiutorials",(req,res)=>{
-    res.render("Tiutorials");
-})
-
-app.get("/Chat",(req,res)=>{
-    res.render("Chat")
-})
-
-app.get("/yoga",(req,res)=>{
-    res.render("Yoga")
-})
-
-app.get("/test",(req,res)=>{
-    res.render("Test")
-})
-
-
+// Logout Route
+app.get("/logout", (req, res) => {
+    res.clearCookie("jwt");
+    res.redirect("/Sign-in");
+});
 
 app.listen(8000, () => {
     console.log("Server started on http://localhost:8000");
