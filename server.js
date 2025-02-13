@@ -33,6 +33,25 @@ app.get("/profile", (req, res) => {
     res.render('Profile');
 });
 
+app.get("/practice-Breathing",(req,res)=>{
+    res.render("Breathing");
+})
+
+app.get("/Tiutorials",(req,res)=>{
+    res.render("Tiutorials");
+})
+
+app.get("/Chat",(req,res)=>{
+    res.render("Chat")
+})
+
+app.get("/yoga",(req,res)=>{
+    res.render("Yoga")
+})
+
+app.get("/test",(req,res)=>{
+    res.render("Test")
+})
 app.listen(8000, () => {
     console.log("Server started on http://localhost:8000");
 });
