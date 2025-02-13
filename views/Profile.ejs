@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Welcome, <%= user.username %>!</h1>
-    <p>Email: <%= user.email %></p>
-    <p>Age: <%= user.age %></p>
-    <p>Location: <%= user.location || "Not Provided" %></p>
-    <p>Gender: <%= user.gender %></p>
-    <p>Phone: <%= user.phoneNumber %></p>
-    <a href="/logout">Logout</a>
+<body class="bg-blue-50 flex justify-center items-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg text-center w-full max-w-2xl">
+        <div class="flex flex-col items-center">
+            <img src="../Public/Untitled_design__2_-removebg-preview.png" alt="User Avatar" class="w-28 h-28 rounded-full border-4 ">
+            <h1 class="text-3xl font-bold text-blue-600 mt-4">Welcome, <%= user.username %>!</h1>
+            <p class="text-gray-700 mt-2 text-lg">Your current mental state: <strong><%= user.mentalState %></strong></p>
+            <p class="text-gray-700 text-lg">Consistency: <strong><%= user.consistency %>%</strong> visits</p>
+        </div>
+        <div class="mt-6 text-left">
+            <p class="text-gray-700"><strong>Email:</strong> <%= user.email %></p>
+            <p class="text-gray-700"><strong>Age:</strong> <%= user.age %></p>
+            <p class="text-gray-700"><strong>Location:</strong> <%= user.location || "Not Provided" %></p>
+            <p class="text-gray-700"><strong>Gender:</strong> <%= user.gender %></p>
+            <p class="text-gray-700"><strong>Phone:</strong> <%= user.phoneNumber %></p>
+        </div>
+        <a href="/logout" class="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">Logout</a>
+    </div>
 </body>
 </html>

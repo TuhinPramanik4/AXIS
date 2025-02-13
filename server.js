@@ -96,11 +96,17 @@ app.get("/profile", authenticateToken, (req, res) => {
     res.render("Profile", { user: req.user });
 });
 
+app.get("/test",(req,res)=>{
+    res.render("Test");
+})
+app.get("/chat",(req,res)=>{
+    res.render("Chat")
+})
 
 // Logout Route
 app.get("/logout", (req, res) => {
     res.clearCookie("jwt");
-    res.redirect("/Sign-in");
+    res.redirect("/");
 });
 
 app.listen(8000, () => {
