@@ -21,6 +21,13 @@ app.get("/Dashboard", (req, res) => {
     res.render("LandingPage");
 });
 
+app.get("/Sign-in",(req,res)=>{
+    res.render("SignIN");
+})
+
+app.get("/Sign-Up",(req,res)=>{
+    res.render("SignUp");
+})
 // Route for Profile Page
 app.get("/profile", (req, res) => {
     res.render('Profile');

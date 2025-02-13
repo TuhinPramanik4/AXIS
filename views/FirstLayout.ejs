@@ -18,7 +18,7 @@
                 <!-- Navigation Links -->
                 <div class="flex space-x-6">
                     <a href="#About-Us" class="text-gray-700 hover:text-blue-500 font-semibold">About Us</a>
-                    <a href="/Dashboard" class="text-gray-700 hover:text-blue-500 font-semibold">Join Us</a>
+                    <a href="/Sign-in" class="text-gray-700 hover:text-blue-500 font-semibold">Join Us</a>
                     <a href="#" class="text-gray-700 hover:text-blue-500 font-semibold">Contact In Need</a>
                 </div>
             </nav>
@@ -65,14 +65,34 @@
                         <div class="flex items-center space-x-4 p-4 bg-white/20 rounded-lg shadow-md">
                             <!-- Icon -->
                             <div class="w-12 h-12">
-                                <img src="https://static.vecteezy.com/system/resources/previews/005/755/264/non_2x/call-answer-icon-symbol-green-call-icon-symbol-for-web-app-logo-vector.jpg"
+                                <img onclick="openModal()" src="https://static.vecteezy.com/system/resources/previews/005/755/264/non_2x/call-answer-icon-symbol-green-call-icon-symbol-for-web-app-logo-vector.jpg"
                                     alt="Call Icon" class="w-full h-full object-contain rounded-full">
                             </div>
             
                             <!-- Text -->
                             <div class="flex justify-center">
-                                <h2 class="text-lg font-semibold text-gray-800">Talk to us in need</h2>
+                                <h2 class="text-lg font-semibold text-gray-800 cursor-pointer" onclick="openModal()">
+                                    Talk to us in need
+                                </h2>
                             </div>
+                            <div id="alertModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+                                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                                    <h3 class="text-xl font-semibold text-gray-800">Emergency Contact</h3>
+                                    <p class="mt-2 text-gray-600">Call us at: <strong>+1234567890</strong></p>
+                                    <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        
+                            <script>
+                                function openModal() {
+                                    document.getElementById("alertModal").classList.remove("hidden");
+                                }
+                                function closeModal() {
+                                    document.getElementById("alertModal").classList.add("hidden");
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>
