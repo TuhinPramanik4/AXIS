@@ -5,9 +5,12 @@ import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import User from "./Models/User.js";   
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const app = express();
-const SECRET_KEY = " "; // Change this to a secure key
+const SECRET_KEY =  process.env.JWT_SECRET; // Change this to a secure key
 
 app.use('/Public', express.static(path.join(process.cwd(), 'Public')));
 app.use(bodyParser.json());
@@ -17,9 +20,9 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
-mongoose.connect(" ", { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware to verify JWT
 async function authenticateToken(req, res, next) {
