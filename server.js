@@ -12,6 +12,18 @@ dotenv.config();
 const app = express();
 const SECRET_KEY =  process.env.JWT_SECRET; // Change this to a secure key
 
+const questions = [
+    { category: "Physical Health", text: "How have your sleeping habits been over the past 6 months?", options: ["I sleep well and feel rested.", "I have some trouble sleeping but manage.", "I frequently have difficulty sleeping or feel restless.", "I struggle significantly with sleep and feel constantly tired."] },
+    { category: "Physical Health", text: "How would you describe your appetite over the past 6 weeks?", options: ["My appetite is stable and normal.", "I eat slightly more or less than usual.", "I have noticed significant changes in my eating habits.", "I have a major decrease or increase in appetite affecting my health."] },
+    { category: "Well-being", text: "How often have you experienced low feelings, stress, or sadness in the past few months?", options: ["Rarely or never.", "Occasionally, but I can manage.", "Frequently, and it affects my mood.", "Almost all the time, and it severely impacts my life."] },
+    { category: "Well-being", text: "How frequently have you lost pleasure or interest in activities you usually enjoy?", options: ["Not at all, I enjoy my usual activities.", "Sometimes, but I can still engage in them.", "Often, and I struggle to enjoy things.", "Almost always, I find little or no joy in anything."] },
+    { category: "Autonomy", text: "How often do you feel like your moods or life are under your control?", options: ["Almost always, I feel in control.", "Often, but I sometimes struggle.", "Rarely, I feel like I have little control.", "Never, I feel completely out of control."] },
+    { category: "Autonomy", text: "How frequently have you been unable to stop worrying?", options: ["Rarely, I manage my worries well.", "Sometimes, but it doesn’t interfere much.", "Often, and it affects my daily life.", "Almost all the time, and it feels overwhelming."] },
+    { category: "Self-Perception", text: "How confident have you been feeling in your capabilities recently?", options: ["Very confident, I trust my abilities.", "Somewhat confident, but I have doubts.", "Often unsure of my abilities.", "I lack confidence and doubt myself constantly."] },
+    { category: "Self-Perception", text: "How often have you felt satisfied with yourself over the past few months?", options: ["Almost always, I feel good about myself.", "Often, but I have some moments of doubt.", "Rarely, I struggle with self-satisfaction.", "Never, I feel deeply unsatisfied with myself."] },
+];
+
+
 app.use('/Public', express.static(path.join(process.cwd(), 'Public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -91,14 +103,51 @@ app.post("/Sign-Up", async (req, res) => {
     }
 });
 
-// Profile route (Protected)
-app.get("/profile", authenticateToken, (req, res) => {
-    res.render("Profile", { user: req.user });
-});
+
 
 app.get("/test",(req,res)=>{
-    res.render("Test");
+    res.render("Test",{questions});
 })
+app.post("/submit-test", authenticateToken, async (req, res) => {
+    let score = 0;
+
+    questions.forEach((q, index) => {
+        const answer = req.body[`q${index}`];
+
+        if (answer) {
+            const optionIndex = q.options.indexOf(answer);
+            if (optionIndex !== -1) {
+                score += optionIndex + 1; // Assign scores: 1 for best state, 4 for worst
+            }
+        }
+    });
+
+    let mentalState = "";
+    if (score <= 10) {
+        mentalState = "Excellent Mental Health";
+    } else if (score <= 18) {
+        mentalState = "Good Mental Health";
+    } else if (score <= 26) {
+        mentalState = "Moderate Mental Health - Consider Taking Some Care";
+    } else {
+        mentalState = "Poor Mental Health - Seeking Help is Recommended";
+    }
+
+    try {
+        await User.findByIdAndUpdate(req.user._id, { mentalstate: mentalState });
+        res.render("result", { score, mentalState });
+    } catch (error) {
+        res.status(500).send("Error updating mental state");
+    }
+});
+
+
+// Profile route (Protected)
+app.get("/profile", authenticateToken, (req, res) => {
+    res.render("Profile", { user: req.user, mentalState: req.user.mentalstate || "Not Evaluated" });
+});
+
+
 app.get("/chat",(req,res)=>{
     res.render("Chat")
 })
