@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breathing Exercise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen bg-blue-50 text-blue-900">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold">Guided Breathing Exercise</h1>
+        <p class="mt-2">Follow the instructions below to relax.</p>
+        <div id="timer" class="text-xl font-medium mt-2">1:00</div>
+        <div id="instruction" class="text-2xl font-semibold mt-4">Breathe In</div>
+        <div class="w-24 h-24 bg-blue-500 rounded-full mx-auto mt-4 transition-transform duration-[4000ms]" id="circle"></div>
+        <button id="dashboardBtn" class="hidden mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg" onclick="window.location.href='/Dashboard'">Go to Dashboard</button>
+    </div>
+    
+    <script>
+        const instruction = document.getElementById("instruction");
+        const circle = document.getElementById("circle");
+        const timerElement = document.getElementById("timer");
+        const dashboardBtn = document.getElementById("dashboardBtn");
+
+        let timeLeft = 60;
+
+        function updateTimer() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            timerElement.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            if (timeLeft > 0) {
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            } else {
+                instruction.innerText = "Session Complete";
+                dashboardBtn.classList.remove("hidden");
+            }
+        }
+
+        function breathingCycle() {
+            instruction.innerText = "Breathe In";
+            circle.classList.add("scale-150");
+            setTimeout(() => {
+                instruction.innerText = "Hold";
+                setTimeout(() => {
+                    instruction.innerText = "Breathe Out";
+                    circle.classList.remove("scale-150");
+                    setTimeout(breathingCycle, 4000);
+                }, 7000);
+            }, 4000);
+        }
+        
+        updateTimer();
+        breathingCycle();
+    </script>
+</body>
+</html>

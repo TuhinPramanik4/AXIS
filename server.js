@@ -151,7 +151,9 @@ app.get("/profile", authenticateToken, (req, res) => {
 app.get("/chat",(req,res)=>{
     res.render("Chat")
 })
-
+app.get("/practice-Breathing",(req,res)=>{
+    res.render("Breathing")
+})
 // Logout Route
 app.get("/logout", (req, res) => {
     res.clearCookie("jwt");
