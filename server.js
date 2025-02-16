@@ -6,12 +6,21 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import User from "./Models/User.js";   
 import dotenv from 'dotenv';
+import {GoogleGenerativeAI} from '@google/generative-ai'
 dotenv.config();
 
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const SECRET_KEY =  process.env.JWT_SECRET; // Change this to a secure key
 
+
+
+const genAI = new GoogleGenerativeAI("api_key");
+const model = genAI.getGenerativeModel({model: "gemini-1.5-flash"})
 const questions = [
     { category: "Physical Health", text: "How have your sleeping habits been over the past 6 months?", options: ["I sleep well and feel rested.", "I have some trouble sleeping but manage.", "I frequently have difficulty sleeping or feel restless.", "I struggle significantly with sleep and feel constantly tired."] },
     { category: "Physical Health", text: "How would you describe your appetite over the past 6 weeks?", options: ["My appetite is stable and normal.", "I eat slightly more or less than usual.", "I have noticed significant changes in my eating habits.", "I have a major decrease or increase in appetite affecting my health."] },
@@ -88,6 +97,28 @@ app.post("/Sign-in", async (req, res) => {
     }
 });
 
+app.post("/send", async (req, res) => {
+    try {
+        const que = req.body.question;
+        if (!que) return res.status(400).json({ error: "Question is required" });
+
+        console.log("Received question:", que);
+
+        const prompt = `${que} recommend only one excerize name , nothing more`;
+        const responseByAI = await model.generateContent(prompt);
+
+        console.log("AI Raw Response:", JSON.stringify(responseByAI, null, 2));
+
+        const ans = responseByAI.response.text();
+
+        return res.json({ answer: ans });
+    } catch (err) {
+        console.error("❌ Error in /send route:", err); // More detailed error
+        res.status(500).json({ error: "Failed to process request" });
+    }
+});
+
+
 app.get("/Sign-Up", (req, res) => {
     res.render("SignUp");
 });
@@ -153,6 +184,13 @@ app.get("/chat",(req,res)=>{
 })
 app.get("/practice-Breathing",(req,res)=>{
     res.render("Breathing")
+})
+
+app.get("/Tiutorials",(req,res)=>{
+    res.render("Tiutorials")
+})
+app.get("/yoga",(req,res)=>{
+    res.render("Yoga");
 })
 // Logout Route
 app.get("/logout", (req, res) => {

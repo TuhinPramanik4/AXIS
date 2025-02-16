@@ -5,6 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mind Guard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function showCustomAlert(message, type = "info") {
+            // Remove any existing alert before creating a new one
+            const existingAlert = document.getElementById("custom-alert");
+            if (existingAlert) existingAlert.remove();
+    
+            // Create the alert box
+            const alertBox = document.createElement("div");
+            alertBox.id = "custom-alert";
+            alertBox.className = `fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-6 text-lg font-semibold rounded-xl text-white shadow-2xl transition-opacity duration-300 ${
+                type === "error" ? "bg-red-600" : "bg-blue-600"
+            } w-96 text-center`;
+    
+            alertBox.innerText = message;
+    
+            // Append the alert box to the body
+            document.body.appendChild(alertBox);
+    
+            // Remove alert after 3 seconds with fade-out effect
+            setTimeout(() => {
+                alertBox.classList.add("opacity-0");
+                setTimeout(() => alertBox.remove(), 500);
+            }, 3000);
+        }
+    
+        async function handleSubmit(event) {
+            event.preventDefault();
+    
+            const inputField = document.getElementById("question");
+            const question = inputField.value.trim();
+    
+            if (!question) {
+                showCustomAlert("Please enter a question.", "error");
+                return;
+            }
+    
+            try {
+                const response = await fetch("/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question }),
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText}`);
+                }
+    
+                const data = await response.json();
+                showCustomAlert(data.answer, "info"); // Display AI response
+            } catch (err) {
+                console.error("Error:", err);
+                showCustomAlert("An error occurred. Please try again.", "error");
+            }
+        }
+    </script>
+    
+    
 </head>
 <body class="h-screen font-sans ">
 
@@ -22,9 +79,17 @@
             <h1 class="text-blue-600">Mind</h1>
             <h1 class="text-black">Guard</h1>
         </div>
-        <div class="test w-1/3 h-full bg-zinc-200 flex justify-center items-end pb-24">
+        <div class="test w-1/3 h-full bg-zinc-200 flex flex-col justify-center items-center gap-12 pb-24">
+            <form class="input-container flex gap-2 w-full max-w-md" onsubmit="handleSubmit(event)">
+                <input type="text" id="question" placeholder="Share how you feel" 
+                    class="flex-1 p-3 border border-gray-300 rounded-2xl outline-none" />
+                <button type="submit" class="p-3 bg-blue-500 text-white rounded-2xl transition hover:bg-blue-700">
+                    Send
+                </button>
+            </form>
             <a href="/test" class="bg-blue-600 text-white px-6 py-3 rounded">Take Test</a>
         </div>
+        
         <div class="Visual w-1/3 h-full bg-zinc-300 flex justify-center items-center">
             <img  class="w-full h-full" src="https://pbs.twimg.com/media/Gjlb0E5aIAAZG1f?format=jpg&name=large" alt="Doctor Image">
         </div>

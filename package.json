@@ -19,6 +19,7 @@
   "homepage": "https://github.com/TuhinPramanik4/AXIS#readme",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
