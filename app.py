@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from flask import Flask, request, jsonify
+from flask_socketio import SocketIO, emit
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import joblib
@@ -12,8 +13,9 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# Initialize Flask app
+# Initialize Flask app and SocketIO
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Load the trained Keras model
 try:
@@ -25,13 +27,11 @@ except Exception as e:
 
 # Load CSV and StandardScaler
 try:
-    df = pd.read_csv("fitness_tracker_dataset.csv")  # Ensure CSV is in the same directory
+    df = pd.read_csv("fitness_tracker_dataset.csv")
     X = df[['sleep_hours', 'calories_burned', 'active_minutes', 'heart_rate_avg']]
-
     scaler = StandardScaler()
     scaler.fit(X)
-
-    joblib.dump(scaler, "scaler.pkl")  # Save the scaler for future use
+    joblib.dump(scaler, "scaler.pkl")
     print("✅ Scaler initialized successfully!")
 except Exception as e:
     print(f"❌ Error loading CSV: {e}")
@@ -55,21 +55,23 @@ EMAIL_PASSWORD = "your_email_password"
 SMTP_SERVER = "smtp.elasticemail.com"
 SMTP_PORT = 2525
 
-
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None or scaler is None:
         return jsonify({"error": "Model or Scaler not loaded correctly."})
-
+    
     try:
         data = request.json
         if not data:
             return jsonify({"error": "No data received. Ensure you're sending JSON."})
-
+        
         phone_number = data.get("phone_number", "")
         email = data.get("email", "")
-
-        input_data = np.array([[
+        
+        if phone_number and not phone_number.startswith("+91"):
+            phone_number = "+91" + phone_number
+        
+        input_data = np.array([[  
             data.get('sleep_hours', 0),
             data.get('calories_burned', 0),
             data.get('active_minutes', 0),
@@ -78,24 +80,26 @@ def predict():
 
         input_data_scaled = scaler.transform(input_data)
         prediction = model.predict(input_data_scaled)
-
+        
         if prediction[0][0] > 0.5:
             alert_message = "⚠ High heart rate detected!"
             suggestions = suggest_relaxation()
             response = {"alert": alert_message, "suggestions": suggestions}
-
+            
+            # Emit real-time alert
+            socketio.emit('alert', response)
+            
             if phone_number:
                 send_sms(phone_number, alert_message + " " + suggestions["tip"])
-
+            
             if email:
                 send_email(email, alert_message, suggestions)
-
+            
             return jsonify(response)
         else:
             return jsonify({"message": "✅ Heart rate is normal. Keep up the healthy lifestyle!"})
     except Exception as e:
         return jsonify({"error": str(e)})
-
 
 def suggest_relaxation():
     suggestions = [
@@ -107,7 +111,7 @@ def suggest_relaxation():
         "📵 Reduce screen time and do a 5-minute guided meditation.",
         "☕ Have a cup of herbal tea like chamomile or green tea."
     ]
-
+    
     music_links = [
         "https://www.youtube.com/watch?v=1ZYbU82GVz4",
         "https://www.youtube.com/watch?v=2OEL4P1Rz04",
@@ -121,7 +125,6 @@ def suggest_relaxation():
         "music_recommendation": random.choice(music_links)
     }
 
-
 def send_sms(phone_number, message):
     try:
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
@@ -134,7 +137,6 @@ def send_sms(phone_number, message):
     except Exception as e:
         print(f"❌ Error sending SMS: {e}")
 
-
 def send_email(to_email, subject, suggestions):
     try:
         msg = MIMEMultipart()
@@ -143,7 +145,7 @@ def send_email(to_email, subject, suggestions):
         msg['Subject'] = subject
         body = f"{subject}\n\n{suggestions['tip']}\n\nListen to relaxing music: {suggestions['music_recommendation']}"
         msg.attach(MIMEText(body, 'plain'))
-
+        
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
@@ -153,6 +155,5 @@ def send_email(to_email, subject, suggestions):
     except Exception as e:
         print(f"❌ Error sending email: {e}")
 
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)
