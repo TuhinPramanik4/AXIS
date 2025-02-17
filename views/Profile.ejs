@@ -6,33 +6,48 @@
     <title>User Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-blue-50 flex justify-center items-center h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-lg text-center w-full max-w-2xl">
-        <div class="flex flex-col items-center">
-            <img src="../Public/Untitled_design__2_-removebg-preview.png" alt="User Avatar" class="w-28 h-28 rounded-full border-4 ">
-            <h1 class="text-3xl font-bold text-blue-600 mt-4">Welcome, <%= user.username %>!</h1>
-            <p class="text-gray-700 mt-2 text-lg">Your current mental state: <strong><%= mentalState %></strong></p>
-            <p class="text-gray-700 text-lg">Consistency: <strong><%= user.consistency %>%</strong> visits</p>
+<body class="bg-blue-50">
+    <div class="flex flex-col items-center w-full min-h-screen">
+        <!-- Navigation Bar -->
+        <nav class="bg-white w-full shadow-md py-3 px-6 flex justify-center space-x-6 fixed top-0">
+            <a href="/profile" class="text-gray-800 hover:bg-blue-300 px-4 py-2 rounded transition">Profile</a>
+            <a href="#mood" class="text-gray-800 hover:bg-blue-300 px-4 py-2 rounded transition">Emotion Tracker</a>
+            <a href="/Dashboard" class="text-gray-800 hover:bg-blue-300 px-4 py-2 rounded transition">Dash Board</a>
+        </nav>
+
+        <!-- Profile Section -->
+        <div class="w-full flex flex-col items-center justify-center mt-20">
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center w-full max-w-2xl">
+                <div class="flex flex-col items-center">
+                    <img src="../Public/Untitled_design__2_-removebg-preview.png" alt="User Avatar" class="w-28 h-28 rounded-full border-4 border-blue-500">
+                    <h1 class="text-3xl font-bold text-blue-600 mt-4">Welcome, <%= user.username %>!</h1>
+                    <p class="text-gray-700 mt-2 text-lg">Your current mental state: <strong><%= user.mentalstate || "Not Evaluated" %></strong></p>
+                    <p class="text-gray-700 text-lg">Consistency: <strong><%= user.consistency %>%</strong> visits</p>
+                </div>
+                <div class="mt-6 text-left space-y-2">
+                    <p class="text-gray-700"><strong>Email:</strong> <%= user.email %></p>
+                    <p class="text-gray-700"><strong>Age:</strong> <%= user.age %></p>
+                    <p class="text-gray-700"><strong>Location:</strong> <%= user.location || "Not Provided" %></p>
+                    <p class="text-gray-700"><strong>Gender:</strong> <%= user.gender %></p>
+                    <p class="text-gray-700"><strong>Phone:</strong> <%= user.phoneNumber %></p>
+                </div>
+                <a href="/logout" class="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">Logout</a>
+            </div>
         </div>
-        <div class="mt-6 text-left">
-            <p class="text-gray-700"><strong>Email:</strong> <%= user.email %></p>
-            <p class="text-gray-700"><strong>Age:</strong> <%= user.age %></p>
-            <p class="text-gray-700"><strong>Location:</strong> <%= user.location || "Not Provided" %></p>
-            <p class="text-gray-700"><strong>Gender:</strong> <%= user.gender %></p>
-            <p class="text-gray-700"><strong>Phone:</strong> <%= user.phoneNumber %></p>
+
+        <!-- Emotion Tracker Section -->
+        <div id="mood" class="w-full flex justify-center mt-16">
+            <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-center mb-4 text-blue-600">Emotion & Notes History</h2>
+                <ul class="space-y-2">
+                    <% user.emotions.forEach((emotion, index) => { %>
+                        <li class="p-3 border rounded-lg bg-gray-100">
+                            <strong class="text-blue-500"><%= emotion %></strong> - <span class="text-gray-600"><%= user.notes[index] || "No notes" %></span>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
         </div>
-        <a href="/logout" class="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">Logout</a>
-    </div>
-    <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-4">
-        <h2 class="text-xl font-bold text-center mb-4">Emotion History</h2>
-        <ul class="space-y-2">
-            <% emotions.forEach(entry => { %>
-                <li class="p-2 border rounded">
-                    <strong><%= entry.emotion %></strong> - <%= entry.note %>
-                    <div class="text-xs text-gray-500"><%= new Date(entry.timestamp).toLocaleString() %></div>
-                </li>
-            <% }); %>
-        </ul>
     </div>
 </body>
 </html>

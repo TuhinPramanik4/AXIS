@@ -27,7 +27,7 @@ const SECRET_KEY =  process.env.JWT_SECRET; // Change this to a secure key
 app.use(cors());
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI("");
+const genAI = new GoogleGenerativeAI("Your API key");
 const model = genAI.getGenerativeModel({model: "gemini-1.5-flash"})
 const questions = [
     { category: "Physical Health", text: "How have your sleeping habits been over the past 6 months?", options: ["I sleep well and feel rested.", "I have some trouble sleeping but manage.", "I frequently have difficulty sleeping or feel restless.", "I struggle significantly with sleep and feel constantly tired."] },
@@ -65,16 +65,20 @@ const EmotionSchema = new mongoose.Schema({
 const Emotion = mongoose.model("Emotion", EmotionSchema);
 const Message = mongoose.model("Message", MessageSchema);
 
-app.post("/submit", async (req, res) => {
-    const { emotion, note } = req.body;
-    await Emotion.create({ emotion, note });
-    res.redirect("/Dashboard");
+app.post("/submit", authenticateToken, async (req, res) => {
+    try {
+        const { emotion, note } = req.body;
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: { emotions: emotion, notes: note }
+        });
+        res.redirect("/Dashboard");
+    } catch (error) {
+        console.error("Error saving emotion:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
 
-app.get("/data", async (req, res) => {
-    const emotions = await Emotion.find().sort({ timestamp: -1 });
-    res.render("data", { emotions });
-});
+
 app.get("/messages", async (req, res) => {
     console.log("GET /messages route hit");
     try {
@@ -255,21 +259,17 @@ app.post("/submit-test", authenticateToken, async (req, res) => {
 // Profile route (Protected)
 app.get("/profile", authenticateToken, async (req, res) => {
     try {
-        // Fetch emotions from the database for the current user
-        const emotions = await Emotion.find().sort({ timestamp: -1 });
-
-        // Render Profile page with emotions data
         res.render("Profile", {
             user: req.user,
-            emotions: emotions,  // Ensure you're passing the correct variable
+            emotions: req.user.emotions,
+            notes: req.user.notes,
             mentalState: req.user.mentalstate || "Not Evaluated"
         });
     } catch (error) {
-        console.error("Error fetching emotions:", error);
+        console.error("Error fetching profile data:", error);
         res.status(500).send("Error loading profile data.");
     }
 });
-
 
 
 app.get("/chat",(req,res)=>{
