@@ -1,9 +1,12 @@
 import express from 'express';
+import http from  'http';
 import mongoose from 'mongoose';
 import path from 'path';
 import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import { Server } from "socket.io";
+import cors from 'cors';
 import User from "./Models/User.js";   
 import dotenv from 'dotenv';
 import {GoogleGenerativeAI} from '@google/generative-ai'
@@ -15,11 +18,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "*" }
+});
 const SECRET_KEY =  process.env.JWT_SECRET; // Change this to a secure key
 
+app.use(cors());
+app.use(express.json());
 
-
-const genAI = new GoogleGenerativeAI("api_key");
+const genAI = new GoogleGenerativeAI("AIzaSyAbM5rRYFkNq5H0ivMSpIvjlXeVOAK6uU8");
 const model = genAI.getGenerativeModel({model: "gemini-1.5-flash"})
 const questions = [
     { category: "Physical Health", text: "How have your sleeping habits been over the past 6 months?", options: ["I sleep well and feel rested.", "I have some trouble sleeping but manage.", "I frequently have difficulty sleeping or feel restless.", "I struggle significantly with sleep and feel constantly tired."] },
@@ -44,6 +52,77 @@ app.set("views", path.join(process.cwd(), "views"));
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+  const MessageSchema = new mongoose.Schema({
+    content: String,
+    timestamp: { type: Date, default: Date.now },
+});
+const EmotionSchema = new mongoose.Schema({
+    emotion: String,
+    note: String,
+    timestamp: { type: Date, default: Date.now }
+});
+const Emotion = mongoose.model("Emotion", EmotionSchema);
+const Message = mongoose.model("Message", MessageSchema);
+
+app.post("/submit", async (req, res) => {
+    const { emotion, note } = req.body;
+    await Emotion.create({ emotion, note });
+    res.redirect("/Dashboard");
+});
+
+app.get("/data", async (req, res) => {
+    const emotions = await Emotion.find().sort({ timestamp: -1 });
+    res.render("data", { emotions });
+});
+app.get("/messages", async (req, res) => {
+    console.log("GET /messages route hit");
+    try {
+        const messages = await Message.find().sort({ timestamp: -1 }).limit(50); // Retrieve latest 50 messages
+        res.json(messages);
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+app.post("/messages", async (req, res) => {
+    try {
+        const { content } = req.body;
+        if (!content || content.trim() === "") {
+            return res.status(400).json({ error: "Message content is required" });
+        }
+        const message = new Message({ content });
+        await message.save();
+        io.emit("newMessage", message); // Emit to all connected clients in real-time
+        res.status(201).json(message);
+    } catch (error) {
+        console.log("Error posting message:", error);
+        res.status(500).json({ error: "Failed to post message" });
+    }
+});
+// WebSockets (Real-time chat)
+io.on("connection", (socket) => {
+    console.log("A user connected:", socket.id);
+    // Handle sending of messages from client
+    socket.on("sendMessage", async (data) => {
+        try {
+            if (!data || data.trim() === "") {
+                socket.emit("error", "Message content cannot be empty.");
+                return;
+            }
+            const message = new Message({ content: data });
+            await message.save();
+            io.emit("newMessage", message); // Broadcast message to all connected clients
+        } catch (error) {
+            console.log("Error handling WebSocket message:", error);
+            socket.emit("error", "Failed to send message.");
+        }
+    });
+    // Handle disconnection
+    socket.on("disconnect", () => {
+        console.log("A user disconnected:", socket.id);
+    });
+});
 
 // Middleware to verify JWT
 async function authenticateToken(req, res, next) {
@@ -174,9 +253,23 @@ app.post("/submit-test", authenticateToken, async (req, res) => {
 
 
 // Profile route (Protected)
-app.get("/profile", authenticateToken, (req, res) => {
-    res.render("Profile", { user: req.user, mentalState: req.user.mentalstate || "Not Evaluated" });
+app.get("/profile", authenticateToken, async (req, res) => {
+    try {
+        // Fetch emotions from the database for the current user
+        const emotions = await Emotion.find().sort({ timestamp: -1 });
+
+        // Render Profile page with emotions data
+        res.render("Profile", {
+            user: req.user,
+            emotions: emotions,  // Ensure you're passing the correct variable
+            mentalState: req.user.mentalstate || "Not Evaluated"
+        });
+    } catch (error) {
+        console.error("Error fetching emotions:", error);
+        res.status(500).send("Error loading profile data.");
+    }
 });
+
 
 
 app.get("/chat",(req,res)=>{
@@ -198,6 +291,5 @@ app.get("/logout", (req, res) => {
     res.redirect("/");
 });
 
-app.listen(8000, () => {
-    console.log("Server started on http://localhost:8000");
-});
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

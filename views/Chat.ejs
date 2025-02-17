@@ -3,12 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Chat Room</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
-<body>
-    <div class="w-full h-screen text-zinc-100 bg-zinc-700 flex justify-center items-center">
-            <h1 class="text-9xl"> Coming Soon </h1>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-4">
+        <h2 class="text-xl font-bold text-center mb-4">Chat Room</h2>
+        <div id="messages" class="h-64 overflow-y-auto border p-2 mb-4"></div>
+        <div class="flex">
+            <input 
+                id="messageInput" 
+                type="text" 
+                class="flex-1 border p-2 rounded-l" 
+                placeholder="Type a message..."
+                onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()" class="bg-blue-500 text-white px-4 rounded-r">Send</button>
+        </div>
     </div>
+    <script>
+        const socket = io();
+
+        function fetchMessages() {
+            fetch("/messages")
+                .then(res => res.json())
+                .then(data => {
+                    const messagesContainer = document.getElementById("messages");
+                    messagesContainer.innerHTML = "";
+                    data.forEach(msg => {
+                        const div = document.createElement("div");
+                        div.classList.add("p-2", "border-b");
+                        div.innerHTML = `<span class="text-gray-700">${msg.content}</span><div class="text-xs text-gray-500">${new Date(msg.timestamp).toLocaleTimeString()}</div>`;
+                        messagesContainer.prepend(div);
+                    });
+                })
+                .catch(err => console.error("Error fetching messages:", err));
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            if (!input.value.trim()) return;
+            fetch("/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: input.value })
+            }).then(() => input.value = "");
+        }
+
+        socket.on("newMessage", msg => {
+            const messagesContainer = document.getElementById("messages");
+            const div = document.createElement("div");
+            div.classList.add("p-2", "border-b");
+            div.innerHTML = `<span class="text-gray-700">${msg.content}</span><div class="text-xs text-gray-500">${new Date(msg.timestamp).toLocaleTimeString()}</div>`;
+            messagesContainer.prepend(div);
+        });
+
+        fetchMessages();
+    </script>
 </body>
 </html>
