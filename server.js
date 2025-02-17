@@ -27,7 +27,7 @@ const SECRET_KEY =  process.env.JWT_SECRET; // Change this to a secure key
 app.use(cors());
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI("Your API key");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({model: "gemini-1.5-flash"})
 const questions = [
     { category: "Physical Health", text: "How have your sleeping habits been over the past 6 months?", options: ["I sleep well and feel rested.", "I have some trouble sleeping but manage.", "I frequently have difficulty sleeping or feel restless.", "I struggle significantly with sleep and feel constantly tired."] },
