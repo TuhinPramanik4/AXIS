@@ -9,8 +9,10 @@ import { Server } from "socket.io";
 import cors from 'cors';
 import User from "./Models/User.js";   
 import dotenv from 'dotenv';
+import twilio from 'twilio';
 import {GoogleGenerativeAI} from '@google/generative-ai'
 dotenv.config();
+
 
 import { fileURLToPath } from 'url';
 
@@ -40,7 +42,11 @@ const questions = [
     { category: "Self-Perception", text: "How often have you felt satisfied with yourself over the past few months?", options: ["Almost always, I feel good about myself.", "Often, but I have some moments of doubt.", "Rarely, I struggle with self-satisfaction.", "Never, I feel deeply unsatisfied with myself."] },
 ];
 
-
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = new twilio(accountSid, authToken);
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+const RECEIVER_PHONE_NUMBER = process.env.RECEIVER_PHONE_NUMBER;
 app.use('/Public', express.static(path.join(process.cwd(), 'Public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -64,6 +70,36 @@ const EmotionSchema = new mongoose.Schema({
 });
 const Emotion = mongoose.model("Emotion", EmotionSchema);
 const Message = mongoose.model("Message", MessageSchema);
+
+function sendSmsAlert(heartRate) {
+    client.messages
+        .create({
+            body: `ALERT: High heart rate detected! Current heart rate: ${heartRate} BPM.`,
+            from: TWILIO_PHONE_NUMBER,
+            to: RECEIVER_PHONE_NUMBER
+        })
+        .then(message => console.log(`Message sent with SID: ${message.sid}`))
+        .catch(error => console.error('Error sending SMS:', error));
+}
+app.get("/heart",(req,res)=>{
+    res.render("Heart");
+})
+app.post('/heartrate', (req, res) => {
+    const { heartRate } = req.body;
+
+    if (!heartRate) {
+        return res.status(400).json({ error: 'Heart rate is required' });
+    }
+
+    console.log(`Received heart rate: ${heartRate}`);
+
+    if (heartRate > 120) {
+        sendSmsAlert(heartRate);
+        return res.json({ message: 'High heart rate detected, SMS sent!' });
+    }
+
+    res.json({ message: 'Heart rate is normal' });
+});
 
 app.post("/submit", authenticateToken, async (req, res) => {
     try {
